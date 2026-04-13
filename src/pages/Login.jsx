@@ -64,7 +64,7 @@ const Login = () => {
              <img src={logoSrc} alt="Nigerian Army University Biu" className="h-24 w-auto object-contain drop-shadow-sm" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight px-4 leading-tight">Nigerian Army University Biu</h1>
-          <p className="text-primary-200 mt-2 font-light">Information Management System</p>
+          <p className="text-primary-200 mt-2 font-light">Integrated University Portal</p>
         </div>
 
         <form onSubmit={handleLogin} className="glass-panel p-8 animate-slide-up">
