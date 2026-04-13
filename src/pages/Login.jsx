@@ -11,21 +11,13 @@ const Login = () => {
   const [activeRole, setActiveRole] = useState('student');
   
   // Credentials state
-  const [matricNo, setMatricNo] = useState('STU/2023/001');
-  const [password, setPassword] = useState('password123');
+  const [matricNo, setMatricNo] = useState('');
+  const [password, setPassword] = useState('');
   
   const login = useStore((state) => state.login);
 
-  // Auto-fill mock credentials based on selected role
+  // Clear errors when tab changes
   useEffect(() => {
-    if (activeRole === 'student') {
-      setMatricNo('STU/2023/001');
-    } else if (activeRole === 'lecturer') {
-      setMatricNo('lecturer');
-    } else if (activeRole === 'admin') {
-      setMatricNo('admin');
-    }
-    setPassword('password123');
     setError('');
   }, [activeRole]);
 
