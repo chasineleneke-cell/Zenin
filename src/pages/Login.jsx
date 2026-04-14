@@ -168,7 +168,7 @@ const Login = () => {
         </form>
 
         <p className="text-center text-primary-200/60 mt-8 text-xs font-medium">
-          &copy; {new Date().getFullYear()} University Name. All rights reserved.
+          &copy; {new Date().getFullYear()} Nigerian Army University Biu. All rights reserved.
         </p>
       </div>
     </div>
