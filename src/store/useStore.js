@@ -209,6 +209,24 @@ const useStore = create((set, get) => ({
   })),
   deleteCalendarEvent: (id) => set((state) => ({
     calendarEvents: state.calendarEvents.filter(e => e.id !== id)
+  })),
+
+  // Admin Student Management State
+  adminStudents: [
+    { id: 'STU/2023/001', name: 'Femi Martins', level: '300 Lvl', department: 'Computer Science', status: 'Active', gpa: 4.0 },
+    { id: 'STU/2023/045', name: 'John Doe', level: '100 Lvl', department: 'Civil Engineering', status: 'Active', gpa: 0.0 },
+    { id: 'STU/2023/089', name: 'Jane Smith', level: '200 Lvl', department: 'Medicine', status: 'Suspended', gpa: 2.4 },
+    { id: 'STU/2023/112', name: 'Alice Johnson', level: '400 Lvl', department: 'Law', status: 'Active', gpa: 3.8 },
+    { id: 'STU/2023/204', name: 'Bob Williams', level: '300 Lvl', department: 'Economics', status: 'Graduated', gpa: 4.2 },
+  ],
+  addAdminStudent: (student) => set((state) => ({
+    adminStudents: [...state.adminStudents, { ...student, gpa: 0.0, status: 'Active' }]
+  })),
+  updateAdminStudent: (id, updates) => set((state) => ({
+    adminStudents: state.adminStudents.map(s => s.id === id ? { ...s, ...updates } : s)
+  })),
+  deleteAdminStudent: (id) => set((state) => ({
+    adminStudents: state.adminStudents.filter(s => s.id !== id)
   }))
 }));
 

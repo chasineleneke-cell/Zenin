@@ -1,21 +1,28 @@
 import React, { useState } from 'react';
-import { Search, UserCheck, UserX, MoreVertical, Edit2, ShieldAlert } from 'lucide-react';
+import { Search, UserCheck, UserX, Edit2, ShieldAlert, Trash2 } from 'lucide-react';
 import PageTransition from '../../components/PageTransition';
 import Toast from '../../components/Toast';
+import Modal from '../../components/Modal';
+import useStore from '../../store/useStore';
 
 const StudentManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [filter, setFilter] = useState('All');
 
-  // Mock Student Database
-  const [students, setStudents] = useState([
-    { id: 'STU/2023/001', name: 'Femi Martins', level: '300 Lvl', department: 'Computer Science', status: 'Active', gpa: 4.0 },
-    { id: 'STU/2023/045', name: 'John Doe', level: '100 Lvl', department: 'Civil Engineering', status: 'Active', gpa: 0.0 },
-    { id: 'STU/2023/089', name: 'Jane Smith', level: '200 Lvl', department: 'Medicine', status: 'Suspended', gpa: 2.4 },
-    { id: 'STU/2023/112', name: 'Alice Johnson', level: '400 Lvl', department: 'Law', status: 'Active', gpa: 3.8 },
-    { id: 'STU/2023/204', name: 'Bob Williams', level: '300 Lvl', department: 'Economics', status: 'Graduated', gpa: 4.2 },
-  ]);
+  // Zustand State
+  const students = useStore(state => state.adminStudents);
+  const addStudent = useStore(state => state.addAdminStudent);
+  const updateStudent = useStore(state => state.updateAdminStudent);
+  const deleteStudent = useStore(state => state.deleteAdminStudent);
+
+  // Modal States
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  
+  const initialForm = { id: '', name: '', department: '', level: '100 Lvl' };
+  const [formData, setFormData] = useState(initialForm);
+  const [activeStudentId, setActiveStudentId] = useState(null);
 
   const filteredStudents = students.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -29,18 +36,48 @@ const StudentManagement = () => {
       setToast({ show: true, type: 'error', message: 'Cannot modify status of graduated students.' });
       return;
     }
-
     const newStatus = currentStatus === 'Active' ? 'Suspended' : 'Active';
-    
-    setStudents(students.map(s => 
-      s.id === id ? { ...s, status: newStatus } : s
-    ));
-
+    updateStudent(id, { status: newStatus });
     setToast({ 
       show: true, 
       type: newStatus === 'Active' ? 'success' : 'warning', 
       message: `Student account ${newStatus.toLowerCase()}.` 
     });
+  };
+
+  const handleAddSubmit = (e) => {
+    e.preventDefault();
+    if (students.find(s => s.id === formData.id)) {
+      setToast({ show: true, type: 'error', message: 'A student with this Matric No already exists.' });
+      return;
+    }
+    addStudent(formData);
+    setIsAddModalOpen(false);
+    setFormData(initialForm);
+    setToast({ show: true, type: 'success', message: 'New student admitted successfully.' });
+  };
+
+  const openEditModal = (student) => {
+    setActiveStudentId(student.id);
+    setFormData({ id: student.id, name: student.name, department: student.department, level: student.level });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+    // Only pass updatable fields, don't change the ID (or if we do, handle it, but realistically ID shouldn't change)
+    updateStudent(activeStudentId, { name: formData.name, department: formData.department, level: formData.level });
+    setIsEditModalOpen(false);
+    setFormData(initialForm);
+    setActiveStudentId(null);
+    setToast({ show: true, type: 'success', message: 'Student information updated.' });
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to permanently delete this student record?")) {
+      deleteStudent(id);
+      setToast({ show: true, type: 'success', message: 'Student record deleted successfully.' });
+    }
   };
 
   return (
@@ -54,7 +91,10 @@ const StudentManagement = () => {
           </div>
           
           <div className="flex gap-2 relative">
-             <button className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-rose-500/20">
+             <button 
+               onClick={() => { setFormData(initialForm); setIsAddModalOpen(true); }}
+               className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-rose-500/20"
+             >
                + Admit New Student
              </button>
           </div>
@@ -124,20 +164,28 @@ const StudentManagement = () => {
                           {student.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 border-b border-slate-50 dark:border-slate-700/20 w-32">
+                      <td className="px-6 py-4 border-b border-slate-50 dark:border-slate-700/20 w-40">
                         <div className="flex items-center justify-end gap-2">
                           <button 
                             onClick={() => toggleStatus(student.id, student.status)}
-                            className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                            className="p-2 text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded-lg transition-colors"
                             title={student.status === 'Active' ? "Suspend Account" : "Activate Account"}
                           >
                             {student.status === 'Active' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
                           </button>
-                          <button className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                          <button 
+                            onClick={() => openEditModal(student)}
+                            className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                            title="Edit Student"
+                          >
                             <Edit2 className="w-4 h-4" />
                           </button>
-                          <button className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
-                            <MoreVertical className="w-4 h-4" />
+                          <button 
+                            onClick={() => handleDelete(student.id)}
+                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            title="Delete Student"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -155,8 +203,119 @@ const StudentManagement = () => {
             </table>
           </div>
         </div>
-
       </div>
+
+      {/* Admit Student Modal */}
+      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Admit New Student">
+        <form onSubmit={handleAddSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Matric Number</label>
+            <input 
+              required
+              type="text" 
+              value={formData.id} 
+              onChange={e => setFormData({...formData, id: e.target.value})}
+              placeholder="e.g. STU/2026/001"
+              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+            <input 
+              required
+              type="text" 
+              value={formData.name} 
+              onChange={e => setFormData({...formData, name: e.target.value})}
+              placeholder="John Doe"
+              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Department</label>
+            <input 
+              required
+              type="text" 
+              value={formData.department} 
+              onChange={e => setFormData({...formData, department: e.target.value})}
+              placeholder="Computer Science"
+              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Level</label>
+            <select 
+              required
+              value={formData.level} 
+              onChange={e => setFormData({...formData, level: e.target.value})}
+              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 dark:text-white"
+            >
+              <option value="100 Lvl">100 Level</option>
+              <option value="200 Lvl">200 Level</option>
+              <option value="300 Lvl">300 Level</option>
+              <option value="400 Lvl">400 Level</option>
+              <option value="500 Lvl">500 Level</option>
+            </select>
+          </div>
+          <div className="pt-4 flex justify-end gap-3">
+            <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors shadow-md shadow-rose-500/20">Admit Student</button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Student Modal */}
+      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Student">
+        <form onSubmit={handleEditSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Matric Number (Read Only)</label>
+            <input 
+              readOnly
+              type="text" 
+              value={formData.id} 
+              className="w-full px-4 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-lg text-slate-500 cursor-not-allowed"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+            <input 
+              required
+              type="text" 
+              value={formData.name} 
+              onChange={e => setFormData({...formData, name: e.target.value})}
+              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Department</label>
+            <input 
+              required
+              type="text" 
+              value={formData.department} 
+              onChange={e => setFormData({...formData, department: e.target.value})}
+              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Level</label>
+            <select 
+              required
+              value={formData.level} 
+              onChange={e => setFormData({...formData, level: e.target.value})}
+              className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 dark:text-white"
+            >
+              <option value="100 Lvl">100 Level</option>
+              <option value="200 Lvl">200 Level</option>
+              <option value="300 Lvl">300 Level</option>
+              <option value="400 Lvl">400 Level</option>
+              <option value="500 Lvl">500 Level</option>
+            </select>
+          </div>
+          <div className="pt-4 flex justify-end gap-3">
+            <button type="button" onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/20">Save Changes</button>
+          </div>
+        </form>
+      </Modal>
 
       <Toast 
         message={toast.message} 
