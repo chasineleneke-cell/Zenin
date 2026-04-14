@@ -23,6 +23,8 @@ const Header = () => {
   const notifications = useStore(state => state.notifications);
   const markNotificationAsRead = useStore(state => state.markNotificationAsRead);
   const clearNotifications = useStore(state => state.clearNotifications);
+  const sidebarOpen = useStore(state => state.sidebarOpen);
+  const setSidebarOpen = useStore(state => state.setSidebarOpen);
   
   const [showDropdown, setShowDropdown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -113,7 +115,10 @@ const Header = () => {
     <header className="absolute top-0 right-0 left-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/50 h-16 flex items-center justify-between px-6 z-10 transition-colors duration-300">
       
       {/* Mobile Menu Button - Hidden on desktop */}
-      <button className="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg">
+      <button 
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="md:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+      >
         <Menu className="w-6 h-6" />
       </button>
 

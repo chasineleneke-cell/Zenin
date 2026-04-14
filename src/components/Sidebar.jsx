@@ -21,6 +21,8 @@ const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const logout = useStore(state => state.logout);
+  const sidebarOpen = useStore(state => state.sidebarOpen);
+  const setSidebarOpen = useStore(state => state.setSidebarOpen);
 
   const handleLogout = () => {
     logout();
@@ -62,7 +64,15 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="w-64 bg-sidebar-bg text-white hidden md:flex flex-col h-full shadow-2xl z-20 transition-all duration-300">
+    <>
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 md:hidden animate-fade-in"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      <aside className={`fixed inset-y-0 left-0 w-64 bg-sidebar-bg text-white flex flex-col h-full shadow-2xl z-40 transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       <div className="p-6 flex items-center gap-3">
         <div className="bg-white/90 p-1.5 rounded-lg shadow-lg border border-red-500/40">
           <img src={logoSrc} alt="NAUB Logo" className="h-8 w-auto object-contain" />
@@ -86,6 +96,7 @@ const Sidebar = () => {
                   <NavLink
                     key={link.path}
                     to={link.path}
+                    onClick={() => setSidebarOpen(false)}
                     className={`nav-item ${isActive ? 'active' : ''}`}
                   >
                     <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400'}`} />
@@ -108,6 +119,7 @@ const Sidebar = () => {
         </button>
       </div>
     </aside>
+    </>
   );
 };
 

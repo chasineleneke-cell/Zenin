@@ -14,6 +14,10 @@ import {
 } from '../mock-data/db';
 
 const useStore = create((set, get) => ({
+  // UI State
+  sidebarOpen: false,
+  setSidebarOpen: (isOpen) => set({ sidebarOpen: isOpen }),
+
   // Authentication State
   user: null, // Starts null, simulating unauthenticated state
   
