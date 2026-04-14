@@ -112,7 +112,7 @@ const Header = () => {
   };
 
   return (
-    <header className="absolute top-0 right-0 left-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/50 h-16 flex items-center justify-between px-6 z-10 transition-colors duration-300">
+    <header className="absolute top-0 right-0 left-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/50 h-16 flex items-center justify-between px-6 z-40 transition-colors duration-300">
       
       {/* Mobile Menu Button - Hidden on desktop */}
       <button 
